@@ -1,59 +1,70 @@
-<!--  ----------------------------------------------------------------------  -->
-<!--  次の <META> 要素を、HTML の <HEAD>タグ間に追加してください。必要に応じて、charset                  -->
-<!--  パラメーターを変更して、HTML ページの文字コードを指定してください。                                    -->
-<!--  ----------------------------------------------------------------------  -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>お問い合わせ</title>
 
-<META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=UTF-8">
 <script src="https://www.google.com/recaptcha/api.js"></script>
 
 <style>
-/* ボタン */
-.submit-btn {
-  padding: 10px;
-  background: #0070d2;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.2s ease;
+/* ===== reCAPTCHAまわり ===== */
+.recaptcha-wrapper {
+  margin-top: 10px;
 }
 
-.submit-btn:hover {
-  background: #005bb5;
-}
-
-.submit-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-/* reCAPTCHAエラー表示 */
 .recaptcha-error {
   color: red;
   font-size: 13px;
-  margin-top: 6px;
+  margin-bottom: 6px;
   display: none;
 }
 
-/* 枠強調 */
+.recaptcha-box {
+  display: inline-block; /* ← 横長防止の本体 */
+}
+
 .recaptcha-box.error {
   border: 2px solid red;
   padding: 6px;
   border-radius: 4px;
 }
+
+/* ===== ボタン ===== */
+.submit-btn {
+  margin-top: 16px;
+  padding: 10px 16px;
+  background: #0070d2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background: #005bb5;
+}
 </style>
 
 <script>
- function timestamp() { 
-  var response = document.getElementById("g-recaptcha-response"); 
-  if (response == null || response.value.trim() == "") {
-   var elems = JSON.parse(document.getElementsByName("captcha_settings")[0].value);
-   elems["ts"] = JSON.stringify(new Date().getTime());
-   document.getElementsByName("captcha_settings")[0].value = JSON.stringify(elems); 
-  } 
- } 
- setInterval(timestamp, 500); 
+/* ===== Salesforce用 timestamp ===== */
+function updateTimestamp() {
+  var response = document.getElementById("g-recaptcha-response");
+  var settings = document.getElementsByName("captcha_settings")[0];
+
+  if (!settings) return;
+
+  if (!response || response.value.trim() === "") {
+    var elems = JSON.parse(settings.value);
+    elems["ts"] = new Date().getTime();
+    settings.value = JSON.stringify(elems);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  setInterval(updateTimestamp, 500);
+});
+
+/* ===== フロントチェック ===== */
 function checkRecaptcha() {
   var el = document.getElementById("g-recaptcha-response");
   var error = document.getElementById("recaptcha-error");
@@ -62,56 +73,61 @@ function checkRecaptcha() {
   if (!el || el.value.trim() === "") {
     error.style.display = "block";
     box.classList.add("error");
-
     box.scrollIntoView({ behavior: "smooth", block: "center" });
-
     return false;
   }
 
   error.style.display = "none";
   box.classList.remove("error");
-
   return true;
 }
 </script>
 
-<!--  ----------------------------------------------------------------------  -->
-<!--  次の <FORM> 要素をページに追加してください。                                              -->
-<!--  ----------------------------------------------------------------------  -->
+</head>
 
-<form action="https://webto.salesforce.com/servlet/servlet.WebToCase?encoding=UTF-8&orgId=00Dg5000008isoU" method="POST" onsubmit="return checkRecaptcha();">
+<body>
 
-<input type=hidden name='captcha_settings' value='{"keyname":"developer","fallback":"true","orgId":"00Dg5000008isoU","ts":""}'>
-<input type=hidden name="orgid" value="00Dg5000008isoU">
-<input type=hidden name="retURL" value="https://test04301008.github.io/test-reCAPCHA/">
+<form action="https://webto.salesforce.com/servlet/servlet.WebToCase?encoding=UTF-8&orgId=00Dg5000008isoU"
+      method="POST"
+      onsubmit="return checkRecaptcha();">
 
-<!--  ----------------------------------------------------------------------  -->
-<!--  注意: これらの項目は、省略可能なデバッグ用要素です。デバッグモードでテストを行う場合は、これらの行をコメント解除してください。        -->
-<!--  <input type="hidden" name="debug" value=1>                              -->
-<!--  <input type="hidden" name="debugEmail" value="t-takawa@ndics.co.jp">    -->
-<!--  ----------------------------------------------------------------------  -->
+<input type="hidden" name="captcha_settings"
+  value='{"keyname":"developer","fallback":"true","orgId":"00Dg5000008isoU","ts":""}'>
+<input type="hidden" name="orgid" value="00Dg5000008isoU">
+<input type="hidden" name="retURL" value="https://test04301008.github.io/test-reCAPCHA/">
 
-<label for="name">取引先責任者名</label><input  id="name" maxlength="80" name="name" size="20" type="text" /><br>
+<label>取引先責任者名</label><br>
+<input type="text" name="name"><br>
 
-<label for="email">メール</label><input  id="email" maxlength="80" name="email" size="20" type="text" /><br>
+<label>メール</label><br>
+<input type="text" name="email"><br>
 
-<label for="phone">電話</label><input  id="phone" maxlength="40" name="phone" size="20" type="text" /><br>
+<label>電話</label><br>
+<input type="text" name="phone"><br>
 
-<label for="subject">件名</label><input  id="subject" maxlength="80" name="subject" size="20" type="text" /><br>
+<label>件名</label><br>
+<input type="text" name="subject"><br>
 
-<label for="description">説明</label><textarea name="description"></textarea><br>
+<label>説明</label><br>
+<textarea name="description"></textarea><br>
 
-<input type="hidden"  id="external" name="external" value="1" /><br>
+<input type="hidden" name="external" value="1">
 
-<div id="recaptcha-error" class="recaptcha-error">
-  reCAPTCHAの確認が必要です
+<div class="recaptcha-wrapper">
+  <div id="recaptcha-error" class="recaptcha-error">
+    reCAPTCHAの確認が必要です
+  </div>
+
+  <div id="recaptcha-container" class="recaptcha-box">
+    <div class="g-recaptcha"
+      data-sitekey="6LeRStEsAAAAAMroC_FfRYYtQzJ_GxKByNOlJdEe"></div>
+  </div>
 </div>
 
-<div id="recaptcha-container" class="recaptcha-box">
-  <div class="g-recaptcha"
-    data-sitekey="6LeRStEsAAAAAMroC_FfRYYtQzJ_GxKByNOlJdEe"></div>
-</div>
-
-<button type="submit" class="submit-btn" id="submitBtn">送信</button>
+<br>
+<button type="submit" class="submit-btn">送信</button>
 
 </form>
+
+</body>
+</html>
