@@ -5,6 +5,45 @@
 
 <META HTTP-EQUIV="Content-type" CONTENT="text/html; charset=UTF-8">
 <script src="https://www.google.com/recaptcha/api.js"></script>
+
+<style>
+/* ボタン */
+.submit-btn {
+  padding: 10px;
+  background: #0070d2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.submit-btn:hover {
+  background: #005bb5;
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* reCAPTCHAエラー表示 */
+.recaptcha-error {
+  color: red;
+  font-size: 13px;
+  margin-top: 6px;
+  display: none;
+}
+
+/* 枠強調 */
+.recaptcha-box.error {
+  border: 2px solid red;
+  padding: 6px;
+  border-radius: 4px;
+}
+</style>
+
 <script>
  function timestamp() { 
   var response = document.getElementById("g-recaptcha-response"); 
@@ -15,12 +54,23 @@
   } 
  } 
  setInterval(timestamp, 500); 
- function checkRecaptcha() {
-  var response = document.getElementById("g-recaptcha-response").value;
-  if (response === "") {
-    alert("reCAPTCHAにチェックを入れてください");
+function checkRecaptcha() {
+  var el = document.getElementById("g-recaptcha-response");
+  var error = document.getElementById("recaptcha-error");
+  var box = document.getElementById("recaptcha-container");
+
+  if (!el || el.value.trim() === "") {
+    error.style.display = "block";
+    box.classList.add("error");
+
+    box.scrollIntoView({ behavior: "smooth", block: "center" });
+
     return false;
   }
+
+  error.style.display = "none";
+  box.classList.remove("error");
+
   return true;
 }
 </script>
@@ -53,7 +103,15 @@
 
 <input type="hidden"  id="external" name="external" value="1" /><br>
 
-<div class="g-recaptcha" data-sitekey="6LeRStEsAAAAAMroC_FfRYYtQzJ_GxKByNOlJdEe"></div><br>
-<input type="submit" name="submit">
+<div id="recaptcha-error" class="recaptcha-error">
+  reCAPTCHAの確認が必要です
+</div>
+
+<div id="recaptcha-container" class="recaptcha-box">
+  <div class="g-recaptcha"
+    data-sitekey="6LeRStEsAAAAAMroC_FfRYYtQzJ_GxKByNOlJdEe"></div>
+</div>
+
+<button type="submit" class="submit-btn" id="submitBtn">送信</button>
 
 </form>
